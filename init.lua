@@ -15,39 +15,40 @@ minetest.register_entity("itemframes:item", {
 		end
 
 		local data = staticdata:split(";")
-		self.texture = data and data[2] or "air"
-		ent:set_properties({textures = {self.texture}})
+
+		ent:set_properties({textures = {data[2]}})
+		self.texture = data[2]
 	end,
 
 	get_staticdata = function(self)
-		return self.texture and " ;" .. self.texture or ""
+		return " ;" .. self.texture or "air"
 	end
 })
 
 local pi = math.pi
 local postab = {
-	[2] = {{x =  1, y = 0, z =  0}, pi * 1.5},
-	[3] = {{x = -1, y = 0, z =  0}, pi * 0.5},
-	[4] = {{x =  0, y = 0, z =  1}, 0},
-	[5] = {{x =  0, y = 0, z = -1}, pi}
+	[2] = {{x =  0.41, z =  0}, pi * 1.5},
+	[3] = {{x = -0.41, z =  0}, pi * 0.5},
+	[4] = {{x =  0,    z =  0.41}, 0},
+	[5] = {{x =  0,    z = -0.41}, pi}
 }
 
 local update_item = function(pos, node)
 	local meta = minetest.get_meta(pos)
 	local item = meta:get_string("item")
-	local param2 = node.param2
-	if not param2 or param2 < 2 or param2 > 5 then return end
-	local posad = postab[param2][1]
-	if item == "" or not posad then return end
-
-	pos.x = pos.x + posad.x * 0.41
-	pos.z = pos.z + posad.z * 0.41
-	local entity = minetest.add_entity(pos, "itemframes:item")
-	local ent = entity:get_luaentity()
+	if item == "" then return end
 	local item_name = ItemStack(item):get_name()
 
-	ent.texture = item_name
-	ent.object:set_properties({textures = {item_name}})
+	local param2 = node.param2 or 0
+	if param2 < 2 or param2 > 5 then return end
+	local posad = postab[param2][1]
+	pos.x = pos.x + posad.x
+	pos.z = pos.z + posad.z
+
+	-- Strange to stay compatible with the previous implementation
+	local staticdata = " ;" .. item_name or ""
+
+	local entity = minetest.add_entity(pos, "itemframes:item", staticdata)
 	if param2 ~= 4 then
 		entity:set_yaw(postab[param2][2])
 	end
