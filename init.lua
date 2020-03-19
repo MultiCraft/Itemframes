@@ -21,7 +21,8 @@ minetest.register_entity("itemframes:item", {
 	end,
 
 	get_staticdata = function(self)
-		return " ;" .. self.texture or "air"
+		local texture = self.texture or "air"
+		return " ;" .. texture
 	end
 })
 
@@ -36,8 +37,8 @@ local postab = {
 local update_item = function(pos, node)
 	local meta = minetest.get_meta(pos)
 	local item = meta:get_string("item")
-	if item == "" then return end
 	local item_name = ItemStack(item):get_name()
+	if item_name == "" then return end
 
 	local param2 = node.param2 or 0
 	if param2 < 2 or param2 > 5 then return end
@@ -46,7 +47,7 @@ local update_item = function(pos, node)
 	pos.z = pos.z + posad.z
 
 	-- Strange to stay compatible with the previous implementation
-	local staticdata = " ;" .. item_name or ""
+	local staticdata = " ;" .. item_name
 
 	local entity = minetest.add_entity(pos, "itemframes:item", staticdata)
 	if param2 ~= 4 then
@@ -67,7 +68,6 @@ local drop_item = function(pos)
 		local ent = obj:get_luaentity()
 		if ent and ent.name == "itemframes:item" then
 			obj:remove()
-			return
 		end
 	end
 end
