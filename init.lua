@@ -117,7 +117,7 @@ minetest.register_node("itemframes:frame",{
 			local posy = pointed_thing.above.y
 			if undery == posy then -- allowed wall-mounted only
 				itemstack = minetest.item_place(itemstack, placer, pointed_thing)
-				minetest.sound_play({name = "default_place_node_hard", gain = 1},
+				minetest.sound_play({name = "default_place_node_hard"},
 						{pos = pointed_thing.above})
 			end
 		end
@@ -126,18 +126,21 @@ minetest.register_node("itemframes:frame",{
 
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
-		local pn = placer:get_player_name()
-		meta:set_string("owner", pn)
+		local pn = placer and placer:get_player_name() or ""
 		meta:set_string("infotext", "Item frame" .. "\n" .. "Owned by " .. pn)
 	end,
 
 	on_rightclick = function(pos, node, clicker, itemstack)
 		if not clicker or
-		minetest.is_protected(pos, clicker:get_player_name()) then return end
+				minetest.is_protected(pos, clicker:get_player_name()) then
+			return itemstack
+		end
 
 		drop_item(pos)
 
-		if not itemstack or itemstack:get_name() == "" then return end
+		if not itemstack or itemstack:get_name() == "" then
+			return itemstack
+		end
 		local item = clicker:get_wielded_item():get_name() -- get real item name
 		local meta = minetest.get_meta(pos)
 
@@ -153,7 +156,8 @@ minetest.register_node("itemframes:frame",{
 	end,
 
 	can_dig = function(pos, player)
-		if minetest.is_protected(pos, player and player:get_player_name()) then
+		if not player or
+				minetest.is_protected(pos, player:get_player_name()) then
 			return false
 		end
 		return true
